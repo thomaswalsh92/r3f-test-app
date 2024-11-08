@@ -1,26 +1,67 @@
-import OSC from "osc-js";
+const osc = require("osc");
+const express = require("express");
+const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const cors = require("cors");
+app.use(cors());
 
-const bridgePlugin = new OSC.BridgePlugin({
-  wsServer: { host: "127.0.0.1", port: 3456 },
-  updServer: { host: "127.0.0.1", post: 2345 },
+//#WEB SOCKET#//
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
 });
 
-const bridge = new OSC({ plugin: bridgePlugin });
-bridge.open();
+io.on("connection", (socket) => {
+  console.log(`user connected: ${socket.id}`);
 
-const message = new OSC.Message();
-
-bridge.on("open", () => {
-  console.log("bridge open");
+  socket.on("send_message", (data) => {
+    socket.broadcast.emit("receive_message", data);
+  });
 });
 
-const webSocketPlugin = new OSC.WebsocketServerPlugin({
-  host: "127.0.0.1",
-  port: 4567,
+server.listen(3001, () => {
+  console.log("SERVER IS RUNNING");
 });
 
-const webSocket = new OSC({ plugin: webSocketPlugin });
+//#OSC Handler#//
+const getIPAddresses = () => {
+  var os = require("os"),
+    interfaces = os.networkInterfaces(),
+    ipAddresses = [];
 
-webSocket.open();
+  for (var deviceName in interfaces) {
+    var addresses = interfaces[deviceName];
+    for (var i = 0; i < addresses.length; i++) {
+      var addressInfo = addresses[i];
+      if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+        ipAddresses.push(addressInfo.address);
+      }
+    }
+  }
 
-webSocket.on("open", () => bridge.send(message));
+  return ipAddresses;
+};
+
+// Bind to a UDP socket to listen for incoming OSC events.
+var udpPort = new osc.UDPPort({
+  localAddress: "127.0.0.1",
+  localPort: 57121,
+});
+
+udpPort.on("ready", () => {
+  var ipAddresses = getIPAddresses();
+  console.log("Listening for OSC over UDP.");
+  ipAddresses.forEach(function (address) {
+    console.log(" Host:", address + ", Port:", udpPort.options.localPort);
+  });
+});
+
+udpPort.on("message", ({ address, args }) => {
+  io.emit("OSC", { message: args });
+});
+
+udpPort.open();
