@@ -61,7 +61,13 @@ udpPort.on("ready", () => {
 });
 
 udpPort.on("message", ({ address, args }) => {
-  io.emit("OSC", { message: args });
+  if (address === "/kick" && args[0] !== 0) {
+    io.emit("kick-start", { velocity: args[0] });
+  }
+
+  if (address === "/kick" && args[0] === 0) {
+    io.emit("kick-end", { veloity: args[0] });
+  }
 });
 
 udpPort.open();
