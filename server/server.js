@@ -15,13 +15,13 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log(`user connected: ${socket.id}`);
+// io.on("connection", (socket) => {
+//   console.log(`user connected: ${socket.id}`);
 
-  socket.on("send_message", (data) => {
-    socket.broadcast.emit("receive_message", data);
-  });
-});
+//   socket.on("send_message", (data) => {
+//     socket.broadcast.emit("receive_message", data);
+//   });
+// });
 
 server.listen(3001, () => {
   console.log("SERVER IS RUNNING");
@@ -49,7 +49,7 @@ const getIPAddresses = () => {
 // Bind to a UDP socket to listen for incoming OSC events.
 var udpPort = new osc.UDPPort({
   localAddress: "127.0.0.1",
-  localPort: 57121,
+  localPort: 2346,
 });
 
 udpPort.on("ready", () => {
@@ -61,12 +61,14 @@ udpPort.on("ready", () => {
 });
 
 udpPort.on("message", ({ address, args }) => {
+  console.log("message-received");
+
   if (address === "/kick" && args[0] !== 0) {
     io.emit("kick-start", { velocity: args[0] });
   }
 
   if (address === "/kick" && args[0] === 0) {
-    io.emit("kick-end", { veloity: args[0] });
+    io.emit("kick-end", { velocity: args[0] });
   }
 });
 
