@@ -3,27 +3,23 @@ import { useFrame } from "@react-three/fiber";
 import React, { useRef } from "react";
 import * as io from "socket.io-client";
 import { Models } from "./Models";
+import { AmbientLight, Color, PointLight } from "three";
+import { OrbitControls } from "@react-three/drei";
 
 const socket = io.connect("http://localhost:3001");
 socket.connect();
 
-// const Models = () => {
-//   const { scene } = useLoader(
-//     GLTFLoader,
-//     "./models/abstract-cylinders.glb"
-//   ) as GLTF;
-
-//   // scene as any as IGLTFData;
-// };
-
 export const AppInner = () => {
+  const pointLightRef = useRef<PointLight>(null!);
+  const ambientLightRef = useRef<AmbientLight>(null!);
+
   useFrame((state, delta) => {
-    // ambientLight.current.intensity = kickOn ? 5 : 0;
-    spotLight.current.intensity = kickOn ? 10 : 0;
+    pointLightRef.current.intensity = kickOn ? 100 : 0;
+    const red = new Color("red");
+    const blue = new Color("blue");
+    ambientLightRef.current.color = kickOn ? red : blue;
   });
 
-  const ambientLight = useRef<THREE.AmbientLight>(null!);
-  const spotLight = useRef<THREE.SpotLight>(null!);
   let kickOn = false;
 
   socket.on("kick-start", () => {
@@ -40,9 +36,10 @@ export const AppInner = () => {
 
   return (
     <>
+      <OrbitControls />
       <Models />
-      <ambientLight intensity={0.02} color="white" />
-      <pointLight ref={spotLight} position={[2, 0, 0]} color="red" />
+      <pointLight ref={pointLightRef} position={[0, 20, 0]} color="red" />
+      <ambientLight ref={ambientLightRef} color="white" />
       {/* <ambientLight ref={ambientLight} /> */}
     </>
   );
