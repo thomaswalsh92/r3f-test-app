@@ -13,6 +13,7 @@ import AppInner from "./components/AppInner";
 export default function App() {
   return (
     <Canvas>
+      <color attach="background" args={["#0A0908"]} />
       <AppInner />
     </Canvas>
   );

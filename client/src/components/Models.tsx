@@ -24,7 +24,7 @@ export const Models = (props: JSX.IntrinsicElements["group"]) => {
   ) as GLTFResult;
   console.log(nodes);
 
-  const material = <meshStandardMaterial color="grey" />;
+  const material = <meshStandardMaterial color="black" />;
   return (
     <group {...props} dispose={null}>
       <mesh name="inner" geometry={nodes.inner.geometry}>

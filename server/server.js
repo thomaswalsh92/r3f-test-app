@@ -1,3 +1,6 @@
+//Gets values from any UPD emitting device and packages them up into events the client can subscribe to.
+//Server does not interpret any data only creates appropriate address, sends and parses starts and end events for example from MIDI notes.
+
 const osc = require("osc");
 const express = require("express");
 const app = express();
@@ -14,14 +17,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
-// io.on("connection", (socket) => {
-//   console.log(`user connected: ${socket.id}`);
-
-//   socket.on("send_message", (data) => {
-//     socket.broadcast.emit("receive_message", data);
-//   });
-// });
 
 server.listen(3001, () => {
   console.log("SERVER IS RUNNING");
@@ -61,14 +56,29 @@ udpPort.on("ready", () => {
 });
 
 udpPort.on("message", ({ address, args }) => {
-  console.log("message-received");
-
+  //###TRIGGERS
+  //filter kick triggers
   if (address === "/kick" && args[0] !== 0) {
     io.emit("kick-start", { velocity: args[0] });
   }
 
   if (address === "/kick" && args[0] === 0) {
     io.emit("kick-end", { velocity: args[0] });
+  }
+
+  //filter bass triggers
+  if (address === "/bass" && args[0] !== 0) {
+    io.emit("bass-start", { velocity: args[0] });
+  }
+
+  if (address === "/bass" && args[0] === 0) {
+    io.emit("bass-end", { velocity: args[0] });
+  }
+
+  //###CONTOURS
+  //filter hat contour
+  if (address === "/hat-contour") {
+    io.emit("hat-contour", { value: args[0] });
   }
 });
 
