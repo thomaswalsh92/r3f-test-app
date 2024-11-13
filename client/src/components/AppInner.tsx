@@ -1,15 +1,29 @@
+//LIBS
 import { useFrame } from "@react-three/fiber";
-import React, { useEffect } from "react";
-import { useRef, useState } from "react";
+import React, { useRef } from "react";
 import * as io from "socket.io-client";
-import { AmbientLight } from "three";
+import { Models } from "./Models";
 
 const socket = io.connect("http://localhost:3001");
-
 socket.connect();
 
+// const Models = () => {
+//   const { scene } = useLoader(
+//     GLTFLoader,
+//     "./models/abstract-cylinders.glb"
+//   ) as GLTF;
+
+//   // scene as any as IGLTFData;
+// };
+
 export const AppInner = () => {
-  const light = useRef<THREE.AmbientLight>(null!);
+  useFrame((state, delta) => {
+    // ambientLight.current.intensity = kickOn ? 5 : 0;
+    spotLight.current.intensity = kickOn ? 10 : 0;
+  });
+
+  const ambientLight = useRef<THREE.AmbientLight>(null!);
+  const spotLight = useRef<THREE.SpotLight>(null!);
   let kickOn = false;
 
   socket.on("kick-start", () => {
@@ -23,26 +37,13 @@ export const AppInner = () => {
   useFrame((state, delta) => {
     console.log(kickOn);
   });
-  const Box = (props: JSX.IntrinsicElements["mesh"]) => {
-    // This reference will give us direct access to the THREE.Mesh object
-    const box = useRef<THREE.Mesh>(null!);
-    useFrame((state, delta) => {
-      box.current.rotation.x += 0.01;
-      light.current.intensity = kickOn ? 5 : 0;
-    });
-
-    return (
-      <mesh {...props} ref={box}>
-        <boxGeometry />
-        <meshStandardMaterial color="blue" />
-      </mesh>
-    );
-  };
 
   return (
     <>
-      <Box position={[0, 0, 0]} />
-      <ambientLight ref={light} />
+      <Models />
+      <ambientLight intensity={0.02} color="white" />
+      <pointLight ref={spotLight} position={[2, 0, 0]} color="red" />
+      {/* <ambientLight ref={ambientLight} /> */}
     </>
   );
 };

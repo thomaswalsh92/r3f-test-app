@@ -1,6 +1,7 @@
 # Node Packages #
 ###################
 node_modules
+models
 
 # Compiled source #
 ###################
