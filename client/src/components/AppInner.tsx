@@ -19,7 +19,7 @@ export const AppInner = () => {
   let hatIntensity = 0;
 
   socket.on("kick-start", () => {
-    kickIntensity = 10;
+    kickIntensity = 50;
   });
 
   socket.on("bass-start", () => {
@@ -27,37 +27,46 @@ export const AppInner = () => {
   });
 
   //to-do figure out how to get discrete data through the WS to get a contour
-  // socket.on("hat-contour", ({ value }) => {
-  //   hatIntensity = value;
-  // });
+  socket.on("hat-contour", ({ value }) => {
+    hatIntensity = value;
+  });
 
   useFrame((state, delta) => {
     pointLightRed.current.intensity = kickIntensity;
     if (kickIntensity > 0) {
-      kickIntensity = kickIntensity - 0.2;
+      kickIntensity = kickIntensity - 1;
+    }
+
+    if (kickIntensity < 0) {
+      kickIntensity = 0;
     }
 
     pointLightBlue.current.intensity = bassIntensity;
     if (bassIntensity > 0) {
-      bassIntensity = bassIntensity - 0.05;
+      bassIntensity = bassIntensity - 0.1;
     }
 
-    // ambientLightRef.current.intensity = hatIntensity * 100;
+    if (bassIntensity < 0) {
+      bassIntensity = 0;
+    }
+
+    ambientLightRef.current.intensity = hatIntensity / 4;
   });
 
   return (
     <>
       <OrbitControls />
       <Models />
-      <pointLight ref={pointLightRed} position={[0, 0, 0]} color="#EF6F6C" />
+      <pointLight ref={pointLightRed} position={[0, 5, 0]} color="#EF6F6C" />
       {/* <pointLight ref={pointLightBlue} position={[0, 20, 0]} color="blue" /> */}
-      <pointLight ref={pointLightBlue} position={[0, -20, 0]} color="#59C9A5" />
-      <ambientLight
+      <pointLight ref={pointLightBlue} position={[0, -5, 0]} color="#59C9A5" />
+      <ambientLight ref={ambientLightRef} color="red" />
+      {/* <ambientLight
         ref={ambientLightRef}
         intensity={100000}
         position={[0, 0, 0]}
         color="blue"
-      />
+      /> */}
     </>
   );
 };
